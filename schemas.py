@@ -1,48 +1,30 @@
 """
-Database Schemas
+Database Schemas for Chat App
 
-Define your MongoDB collection schemas here using Pydantic models.
-These schemas are used for data validation in your application.
-
-Each Pydantic model represents a collection in your database.
-Model name is converted to lowercase for the collection name:
-- User -> "user" collection
-- Product -> "product" collection
-- BlogPost -> "blogs" collection
+Each Pydantic model represents a collection in MongoDB.
+Collection name is the lowercase of the class name.
 """
-
 from pydantic import BaseModel, Field
-from typing import Optional
-
-# Example schemas (replace with your own):
+from typing import Optional, List
 
 class User(BaseModel):
-    """
-    Users collection schema
-    Collection name: "user" (lowercase of class name)
-    """
-    name: str = Field(..., description="Full name")
-    email: str = Field(..., description="Email address")
-    address: str = Field(..., description="Address")
-    age: Optional[int] = Field(None, ge=0, le=120, description="Age in years")
-    is_active: bool = Field(True, description="Whether user is active")
+    """Users collection schema -> collection name: "user"""
+    display_name: str = Field(..., description="Public display name")
+    avatar_url: Optional[str] = Field(None, description="Optional avatar URL")
+    status: str = Field("online", description="online, idle, dnd, offline")
 
-class Product(BaseModel):
-    """
-    Products collection schema
-    Collection name: "product" (lowercase of class name)
-    """
-    title: str = Field(..., description="Product title")
-    description: Optional[str] = Field(None, description="Product description")
-    price: float = Field(..., ge=0, description="Price in dollars")
-    category: str = Field(..., description="Product category")
-    in_stock: bool = Field(True, description="Whether product is in stock")
+class Room(BaseModel):
+    """Rooms collection schema -> collection name: "room"""
+    name: str = Field(..., description="Room name")
+    type: str = Field("channel", description="channel or direct")
+    members: List[str] = Field(default_factory=list, description="List of user ids")
+    is_private: bool = Field(False, description="Whether room is private")
 
-# Add your own schemas here:
-# --------------------------------------------------
-
-# Note: The Flames database viewer will automatically:
-# 1. Read these schemas from GET /schema endpoint
-# 2. Use them for document validation when creating/editing
-# 3. Handle all database operations (CRUD) directly
-# 4. You don't need to create any database endpoints!
+class Message(BaseModel):
+    """Messages collection schema -> collection name: "message"""
+    room_id: str = Field(..., description="Room id (string)")
+    sender_id: str = Field(..., description="User id (string)")
+    content: str = Field(..., description="Message text content")
+    type: str = Field("text", description="Message type: text/image/file/system")
+    is_edited: bool = Field(False)
+    is_deleted: bool = Field(False)
